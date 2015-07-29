@@ -1,12 +1,16 @@
 #include "eudaq/FileReader.hh"
 #include "eudaq/PluginManager.hh"
 
+#include "TH1D.h"
+
 using namespace eudaq;
 
 int main() {
 
   FileReader reader = FileReader("20202", "run$6R$X");
 
+  TH1D * h1 = new TH1D();
+  
   size_t event_nr = 0;
   
   do {
