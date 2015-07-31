@@ -222,23 +222,23 @@ int main( int argc, char* argv[] )
   double tx[4];
   double ty[4];
 
-  if( run >= 70 ) { // Sun 26.7.2015
+  if( run >= 70 ) { // updated
 
-    alignx[0] = -1.162; // [mm] same sign as dx
+    alignx[0] = -1.162; // [mm] same sign as dxAB
     aligny[0] = -0.448; // [mm] same sign as dy
     fx[0] = -0.004; // [rad] rot, same     sign dxvsy
     fy[0] = -0.007; // [rad] rot, opposite sign dyvsx
-    tx[0] = 0.0000; // from dxvsx
-    ty[0] = 0.0012; // from dyvsy
+    tx[0] = 0.0005; // from dxvsx
+    ty[0] = 0.0006; // from dyvsy
 
-    alignx[2] = -0.413; // [mm] same sign as dx
+    alignx[2] = -0.404; // [mm] same sign as dxCB
     aligny[2] =  0.292; // [mm] same sign as dy
     fx[2] = -0.0055; // [rad] rot, same     sign dxvsy
     fy[2] =  0.0048; // [rad] rot, opposite sign dyvsx
-    tx[2] = 0.0000; // from dxvsx
+    tx[2] = 0.0003; // from dxvsx
     ty[2] =-0.0050; // from dyvsy, same sign
 
-    alignx[3] =  0.288; // [mm] same sign as dx
+    alignx[3] =  0.288; // [mm] same sign as dxDB
     aligny[3] =  0.588; // [mm] same sign as dy
     fx[3] = -0.0015; // [rad] rot, same     sign dxvsy
     fy[3] =  0.0056; // [rad] rot, opposite sign dyvsx
@@ -381,23 +381,23 @@ int main( int argc, char* argv[] )
 
   // book histos:
   /*
-  TH1D hcolA( "colA", "A col;col;A pixels", 416, -0.5, 415.5 );
-  TH1D hrowA( "rowA", "A row;row;A pixels", 160, -0.5, 159.5 );
-  TH1D hpxqA( "pxqA", "A pixel charge;pixel q [ke];A pixels",
-	      100, 0, 25 );
-  TH2D * hmapA;
-  hmapA = new TH2D( "pxmapA", "A pixel map;column;row;A pixels",
-		    416, -0.5, 415.5, 160, -0.5, 159.5 );
-  TH1D hnpxA( "npxA", "A pixel per event;pixels;A events",
-	      51, -0.5, 50.5 );
-  TH1D hsizA( "clszA", "A cluster size;pixels/cluster;A clusters",
-	      51, -0.5, 50.5 );
-  TH1D hclqA( "clqA", "A cluster charge;cluster charge [ke];A clusters",
-	      100, 0, 100 );
-  TH1D hncolA( "ncolA", "A cluster size;columns/cluster;A clusters",
-	       21, -0.5, 20.5 );
-  TH1D hnrowA( "nrowA", "A cluster size;rows/cluster;A clusters",
-	       21, -0.5, 20.5 );
+    TH1D hcolA( "colA", "A col;col;A pixels", 416, -0.5, 415.5 );
+    TH1D hrowA( "rowA", "A row;row;A pixels", 160, -0.5, 159.5 );
+    TH1D hpxqA( "pxqA", "A pixel charge;pixel q [ke];A pixels",
+    100, 0, 25 );
+    TH2D * hmapA;
+    hmapA = new TH2D( "pxmapA", "A pixel map;column;row;A pixels",
+    416, -0.5, 415.5, 160, -0.5, 159.5 );
+    TH1D hnpxA( "npxA", "A pixel per event;pixels;A events",
+    51, -0.5, 50.5 );
+    TH1D hsizA( "clszA", "A cluster size;pixels/cluster;A clusters",
+    51, -0.5, 50.5 );
+    TH1D hclqA( "clqA", "A cluster charge;cluster charge [ke];A clusters",
+    100, 0, 100 );
+    TH1D hncolA( "ncolA", "A cluster size;columns/cluster;A clusters",
+    21, -0.5, 20.5 );
+    TH1D hnrowA( "nrowA", "A cluster size;rows/cluster;A clusters",
+    21, -0.5, 20.5 );
   */
 
   TH1D hncl[4];
@@ -465,12 +465,140 @@ int main( int argc, char* argv[] )
 		    216, 0, 64.8, -1, 1 );
   TProfile dyvsyDC( "dyvsyDC", "D-C dy vs y;y [mm];D-C <dy>",
 		    81, 0, 16.2, -1, 1 );
+  TH2D hxxDA( "xxDA", "D vs A;col A;col D;clusters",
+	      432, 0, 64.8, 432, 0, 64.8 );
+  TH2D hyyDA( "yyDA", "D vs A;row A;row D;clusters",
+	      162, 0, 16.2, 162, 0, 16.2 );
+
+  TH1D hdxDA( "dxDA", "Dx-Ax;x-x [mm];cluster pairs", 200, -5, 5 );
+  TH1D hdyDA( "dyDA", "Dy-Ay;y-y [mm];cluster pairs", 200, -5, 5 );
+  TH1D hdxcDA( "dxcDA", "Dx-Ax;x-x [mm];cluster pairs", 200, -1, 1 );
+  TH1D hdycDA( "dycDA", "Dy-Ay;y-y [mm];cluster pairs", 200, -1, 1 );
+
+  TProfile dxvsxDA( "dxvsxDA", "D-A dx vs x;x [mm];D-A <dx>",
+		    216, 0, 64.8, -1, 1 );
+  TProfile dxvsyDA( "dxvsyDA", "D-A dx vs y;y [mm];D-A <dx>",
+		    81, 0, 16.2, -1, 1 );
+  TProfile dyvsxDA( "dyvsxDA", "D-A dy vs x;x [mm];D-A <dy>",
+		    216, 0, 64.8, -1, 1 );
+  TProfile dyvsyDA( "dyvsyDA", "D-A dy vs y;y [mm];D-A <dy>",
+		    81, 0, 16.2, -1, 1 );
+
+  // triplets ADC:
+
+  TH1D hdxADC( "dxADC", "ADC dx;x-x [mm];ADCplets", 200, -1, 1 );
+  TH1D hdyADC( "dyADC", "ADC dy;y-y [mm];ADCplets", 200, -1, 1 );
+  TH1D hdxcADC( "dxcADC", "ADC dx;x-x [um];ADCplets", 200, -200, 200 );
+  TH1D hdycADC( "dycADC", "ADC dy;y-y [um];ADCplets", 200, -200, 200 );
+  TH1D hdxciADC( "dxciADC", "ADC dx;x-x [um];isolated ADCplets",
+		 200, -200, 200 );
+  TH1D hdyciADC( "dyciADC", "ADC dy;y-y [um];isolated ADCplets",
+		 200, -200, 200 );
+
+  TProfile dxvsxADC( "dxvsxADC", "ADCplet dx vs x;x [mm];ADCplet <dx>",
+		     216, 0, 64.8, -1, 1 );
+  TProfile dxvsyADC( "dxvsyADC", "ADCplet dx vs y;y [mm];ADCplet <dx>",
+		     81, 0, 16.2, -1, 1 );
+  TProfile dyvsxADC( "dyvsxADC", "ADCplet dy vs x;x [mm];ADCplet <dy>",
+		     216, 0, 64.8, -1, 1 );
+  TProfile dyvsyADC( "dyvsyADC", "ADCplet dy vs y;y [mm];ADCplet <dy>",
+		     81, 0, 16.2, -1, 1 );
+  TH1D hxADC( "xADC", "ADCplets;col;ADCplets", 216, 0, 64.8 );
+  TH1D hyADC( "yADC", "ADCplets;row;ADCplets",  81, 0, 16.2 );
+  TH2D * hmapADC;
+  hmapADC = new TH2D( "mapADC", "ADCplet map;ADCplet col;ADCplet row;ADCplets",
+		      8*54, 0, 8*8.1, 2*81, 0, 2*8.1 );
+  TH1D hnADC( "nADC", "ADCplets;ADCplets;events", 21, -0.5, 20.5 );
+  TH1D htxADC( "txADC", "ADCplet angle x;ADCplet angle x;ADCplets", 100, -1, 1 );
+  TH1D htyADC( "tyADC", "ADCplet angle y;ADCplet angle y;ADCplets", 100, -1, 1 );
+
+  // triplets ABC:
+
+  TH1D hdxACB( "dxACB", "ACB dx;x-x [mm];ACBs", 200, -1, 1 );
+  TH1D hdyACB( "dyACB", "ACB dy;y-y [mm];ACBs", 200, -1, 1 );
+  TH1D hdxcACB( "dxcACB", "ACB dx;x-x [um];ACBs", 200, -200, 200 );
+  TH1D hdycACB( "dycACB", "ACB dy;y-y [um];ACBs", 200, -200, 200 );
+  TH1D hdxciACB( "dxciACB", "ACB dx;x-x [um];isolated ACBs",
+		 200, -200, 200 );
+  TH1D hdyciACB( "dyciACB", "ACB dy;y-y [um];isolated ACBs",
+		 200, -200, 200 );
+  TH1D hdycfACB( "dycfACB", "ACB dy;y-y [um];inner ACBs",
+		 200, -200, 200 );
+  TH1D hdycfqACB( "dycfqACB", "ACB dy;y-y [um];Landau peak inner ACBs",
+		  200, -200, 200 );
+
+  TProfile dxvsxACB( "dxvsxACB",
+		     "ACB dx vs x;x [mm];ACB <dx>",
+		     216, 0, 64.8, -1, 1 );
+  TProfile dxvsyACB( "dxvsyACB",
+		     "ACB dx vs y;y [mm];ACB <dx>",
+		     81, 0, 16.2, -1, 1 );
+  TProfile dyvsxACB( "dyvsxACB",
+		     "ACB dy vs x;x [mm];ACB <dy>",
+		     216, 0, 64.8, -1, 1 );
+  TProfile dyvsyACB( "dyvsyACB",
+		     "ACB dy vs y;y [mm];ACB <dy>",
+		     81, 0, 16.2, -1, 1 );
+  TProfile madyvsyACB( "madyvsyACB",
+		       "ACB mady vs y;y [mm];ACB MAD(y) [um]",
+		       81, 0, 16.2, 0, 100 );
+  TProfile madyvsymACB( "madyvsymACB",
+			"ACB mady vs ymod;y mod 200 [um];ACB MAD(y) [um]",
+			40, 0, 200, 0, 100 );
+  TH2D * hmapACB;
+  hmapACB = new TH2D( "mapACB",
+		      "ACBplet map;ACBplet col;ACBplet row;ACBplets",
+		      8*54, 0, 8*8.1, 2*81, 0, 2*8.1 );
+
+  // Bvs AC:
+
+  TH1D hsizB4( "clszB4", "B cluster size;pixels/cluster;B4 clusters",
+	       51, -0.5, 50.5 );
+  TH1D hclqB4( "clqB4", "B cluster charge;cluster charge [ke];B4 clusters",
+	       100, 0, 100 );
+  TH1D hncolB4( "ncolB4", "B cluster size;columns/cluster;B4 clusters",
+		21, -0.5, 20.5 );
+  TH1D hnrowB4( "nrowB4", "B cluster size;rows/cluster;B4 clusters",
+		21, -0.5, 20.5 );
+  TProfile ncolvsxmB( "ncolvsxmB",
+		      "B cols vs xmod;x mod 200 [um];<cols> B4 ",
+		      60, 0, 300, 0, 10 );
+  TProfile nrowvsymB( "nrowvsymB",
+		      "B rows vs ymod;y mod 200 [um];<rows> B4 ",
+		      40, 0, 200, 0, 10 );
+  // B vs ADC:
+
+  TProfile effBvsx0( "effBvsx0", "effB vs lower x;lower ADCplet x;eff B",
+		     216, 0, 64.8, -1, 2 );
+  TProfile effBvsx1( "effBvsx1", "effB vs upper x;upper ADCplet x;eff B",
+		     216, 0, 64.8, -1, 2 );
+  TProfile effBvsy( "effBvsy", "effB vs y;ADCplet y;eff B",  81, 0, 16.2, -1, 2 );
+  TProfile effBvst1( "effBvst1", "effB vs time;trigger;eff B",
+		     500, 0, 1E6, -1, 2 );
+  TProfile effBvst5( "effBvst5", "effB vs time;trigger;eff B",
+		     500, 0, 5E6, -1, 2 );
+  TProfile effBvst40( "effBvst40", "effB vs time;trigger;eff B",
+		      1000, 0, 40E6, -1, 2 );
+  TProfile effBvsti1( "effBvsti1", "effB vs time;trigger;iso eff B",
+		      500, 0, 1E6, -1, 2 );
+  TProfile effBvsti8( "effBvsti8", "effB vs time;trigger;iso eff B",
+		      500, 0, 8E6, -1, 2 );
+  TProfile effBvswi( "effBvswi", "effB vs window;link window [mm];iso eff B",
+		     20, 0.025, 1.025, -1, 2 );
+  TProfile2D * effBmap1;
+  effBmap1 = new TProfile2D( "effBmap1",
+			     "B efficiency map;col;row;eff B",
+			     8*54, 0, 8*8.1, 2*81, 0, 2*8.1, -1, 2 );
+  TProfile2D * effBmap4;
+  effBmap4 = new TProfile2D( "effBmap4",
+			     "B efficiency map;col;row;eff B",
+			     4*54, 0, 8*8.1, 1*81, 0, 2*8.1, -1, 2 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // event loop:
 
   size_t event_nr = 0;
-  
+
   do {
     // Get next event:
     DetectorEvent evt = reader.GetDetectorEvent();
@@ -523,10 +651,6 @@ int main( int argc, char* argv[] )
 	ym = plane.GetY(ipix); // global row 0..159
 	adc = plane.GetPixel(ipix); // ADC 0..255
 
-	// to do: gaincal
-
-	cal = adc;
-
 	// leave space for big pixels:
 
 	int roc = xm / 52; // 0..7
@@ -544,6 +668,7 @@ int main( int argc, char* argv[] )
 	  row = 159 - ym; // 79..0
 	}
 
+	cal = adc;
 	if( xm < 0 || xm > 415 || ym < 0 || ym > 159 || adc < 0 || adc > 255 )
 	  cout << "invalid pixel at event " << event_nr << endl;
 	else if( haveGain[mod] ) {
@@ -760,6 +885,202 @@ int main( int argc, char* argv[] )
       } // cl
 
     } // cl
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // B vs D-C-A triplets:
+
+    int nADC = 0;
+    int nADB = 0;
+
+    bool iso = cl[0].size() == 1 && cl[2].size() == 1 && cl[3].size() == 1;
+
+    for( vector<cluster>::iterator cA = cl[0].begin(); cA != cl[0].end(); ++cA ) {
+
+      double xA = cA->col*0.15 - alignx[0];
+      double yA = cA->row*0.10 - aligny[0];
+      double xmid = xA - 32.4;
+      double ymid = yA -  8.1;
+      double xrot = xmid     - ymid*fx[0] - tx[0]*xmid;
+      double yrot = xmid*fy[0] + ymid     - ty[0]*ymid;
+      xA = xrot + 32.4;
+      yA = yrot +  8.1;
+      double qA = cA->charge*ke[0];
+      bool lqA = 1;
+      if(      qA < 17 ) lqA = 0;
+      else if( qA > 30 ) lqA = 0;
+
+      for( vector<cluster>::iterator cD = cl[3].begin(); cD != cl[3].end(); ++cD ) {
+
+	double xD = cD->col*0.15 - alignx[3];
+	double yD = cD->row*0.10 - aligny[3];
+	double xmid = xD - 32.4;
+	double ymid = yD -  8.1;
+	double xrot = xmid     - ymid*fx[3] - tx[3]*xmid;
+	double yrot = xmid*fy[3] + ymid     - ty[3]*ymid;
+	xD = xrot + 32.4;
+	yD = yrot +  8.1;
+	double qD = cD->charge*ke[3];
+	bool lqD = 1;
+	if(      qD < 17 ) lqD = 0;
+	else if( qD > 30 ) lqD = 0;
+
+	hxxDA.Fill( xA, xD );
+	hyyDA.Fill( yA, yD );
+
+	double dx2 = xD - xA;
+	double dy2 = yD - yA;
+	hdxDA.Fill( dx2 );
+	hdyDA.Fill( dy2 );
+	if( abs( dy2 ) < 0.15 && cA->big == 0 && cD->big == 0 ) {
+	  hdxcDA.Fill( dx2 );
+	  dxvsxDA.Fill( xD, dx2 );
+	  dxvsyDA.Fill( yD, dx2 );
+	}
+	if( abs( dx2 ) < 0.20 && cA->big == 0 && cD->big == 0 ) {
+	  hdycDA.Fill( dy2 );
+	  dyvsxDA.Fill( xD, dy2 );
+	  dyvsyDA.Fill( yD, dy2 );
+	}
+
+	if( abs( dx2 ) > 0.20 ) continue;
+	if( abs( dy2 ) > 0.20 ) continue;
+
+	double xavg2 = (xA + 2*xD)/3; // equidistant
+	double yavg2 = (yA + 2*yD)/3; // C is closer to D: more weight for D
+
+	double slpx = xD - xA; // angle
+	double slpy = yD - yA; // angle
+
+	for( vector<cluster>::iterator cC = cl[2].begin(); cC != cl[2].end(); ++cC ) {
+
+	  double xC = cC->col*0.15 - alignx[2];
+	  double yC = cC->row*0.10 - aligny[2];
+	  double xmid = xC - 32.4;
+	  double ymid = yC -  8.1;
+	  double xrot = xmid     - ymid*fx[2] - tx[2]*xmid;
+	  double yrot = xmid*fy[2] + ymid     - ty[2]*ymid;
+	  xC = xrot + 32.4;
+	  yC = yrot +  8.1;
+	  double qC = cC->charge*ke[2];
+	  bool lqC = 1;
+	  if(      qC < 17 ) lqC = 0;
+	  else if( qC > 30 ) lqC = 0;
+
+	  double dx3 = xC - xavg2;
+	  double dy3 = yC - yavg2;
+	  hdxADC.Fill( dx3 );
+	  hdyADC.Fill( dy3 );
+	  if( abs( dy3 ) < 0.15 && cD->big == 0 && cA->big == 0 && cC->big == 0 ) {
+	    hdxcADC.Fill( dx3*1E3 );
+	    if( iso ) hdxciADC.Fill( dx3*1E3 );
+	    dxvsxADC.Fill( xC, dx3 );
+	    dxvsyADC.Fill( yC, dx3 );
+	  }
+	  if( abs( dx3 ) < 0.20 && cD->big == 0 && cA->big == 0 && cC->big == 0 ) {
+	    hdycADC.Fill( dy3*1E3 );
+	    if( iso ) hdyciADC.Fill( dy3*1E3 );
+	    dyvsxADC.Fill( xC, dy3 );
+	    dyvsyADC.Fill( yC, dy3 );
+	  }
+	  if( abs( dx3 ) < 0.2 && abs( dy3 ) < 0.15 ) {
+	    hxADC.Fill( xC );
+	    hyADC.Fill( yC );
+	    hmapADC->Fill( xC, yC ); // D-C-A
+	  }
+
+	  if( abs( dx3 ) > 0.10 ) continue; // tight tri
+	  if( abs( dy3 ) > 0.10 ) continue;
+
+	  ++nADC;
+
+	  htxADC.Fill( slpx );
+	  htyADC.Fill( slpy );
+
+	  double xavg3 = 0.5*(xA + xC); // equidistant
+	  double yavg3 = 0.5*(yA + yC);
+	  double xmod = fmod( xavg3+60, 0.300 )*1E3;
+	  double ymod = fmod( yavg3+20, 0.200 )*1E3;
+
+	  // efficiency of B:
+
+	  int nm[21] = {0};
+
+	  for( vector<cluster>::iterator cB = cl[1].begin(); cB != cl[1].end(); ++cB ) {
+
+	    double xB = cB->col*0.15; // REF
+	    double yB = cB->row*0.10;
+	    double qB = cB->charge*ke[1];
+	    bool lqB = 1;
+	    if(      qB < 17 ) lqB = 0;
+	    else if( qB > 30 ) lqB = 0;
+
+	    // tri ACB:
+
+	    double dx4 = xB - xavg3;
+	    double dy4 = yB - yavg3;
+	    hdxACB.Fill( dx4 );
+	    hdyACB.Fill( dy4 );
+	    if( abs( dy4 ) < 0.10
+		&& cB->big == 0 && cD->big == 0 && cA->big == 0 && cC->big == 0 ) {
+	      hdxcACB.Fill( dx4*1E3 );
+	      if( iso ) hdxciACB.Fill( dx4*1E3 );
+	      dxvsxACB.Fill( xB, dx4 );
+	      dxvsyACB.Fill( yB, dx4 );
+	    }
+	    if( abs( dx4 ) < 0.10
+		&& cB->big == 0 && cD->big == 0 && cA->big == 0 && cC->big == 0 ) {
+	      hdycACB.Fill( dy4*1E3 );
+	      if( iso ) hdyciACB.Fill( dy4*1E3 );
+	      dyvsxACB.Fill( xB, dy4 );
+	      dyvsyACB.Fill( yB, dy4 );
+	      madyvsyACB.Fill( yB, fabs(dy4)*1E3 );
+	      if( yB > 2 && yB < 13 ) { // module handle cutout
+		madyvsymACB.Fill( ymod, fabs(dy4)*1E3 );
+		hdycfACB.Fill( dy4*1E3 );
+		if( lqA && lqB && lqC )
+		  hdycfqACB.Fill( dy4*1E3 );
+	      }
+	    }
+
+	    if( abs( dx4 ) < 0.20 && abs( dy4 ) < 0.20 ) {
+	      hmapACB->Fill( xB, yB );
+	      hsizB4.Fill( cB->size );
+	      hclqB4.Fill( cB->charge*ke[1] );
+	      hncolB4.Fill( cB->ncol );
+	      hnrowB4.Fill( cB->nrow );
+	      ncolvsxmB.Fill( xmod, cB->ncol );
+	      nrowvsymB.Fill( ymod, cB->nrow );
+	    }
+	    
+	    for( int iw = 1; iw < 21; ++ iw )
+	      if( abs( dx4 ) < iw*0.050 && abs( dy4 ) < iw*0.050 ) { // for eff
+		nm[iw] = 1;
+	      }
+
+	  } // cl B
+
+	  effBvst1.Fill( event_nr, nm[14] );
+	  effBvst5.Fill( event_nr, nm[14] );
+	  effBvst40.Fill( event_nr, nm[14] );
+	  if( iso ) {
+	    if( yavg3 < 8.1 )
+	      effBvsx0.Fill( xavg3, nm[14] );
+	    else
+	      effBvsx1.Fill( xavg3, nm[14] );
+	    effBvsy.Fill( yavg3, nm[14] );
+	    effBmap1->Fill( xavg3, yavg3, nm[14] );
+	    effBmap4->Fill( xavg3, yavg3, nm[14] );
+	    effBvsti1.Fill( event_nr, nm[14] );
+	    effBvsti8.Fill( event_nr, nm[14] );
+	    for( int iw = 1; iw < 21; ++ iw )
+	      effBvswi.Fill( iw*0.050+0.005, nm[iw] );
+	  }
+
+	} // cl C
+      } // cl D
+    } // cl A
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     // tracking
 
