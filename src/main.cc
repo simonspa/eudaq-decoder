@@ -374,7 +374,7 @@ int main( int argc, char* argv[] )
 
       } // gainFile open
 
-    } // gainFileName
+     } // gainFileName
 
   } // mod
 
@@ -404,13 +404,56 @@ int main( int argc, char* argv[] )
     TH1D hnrowA( "nrowA", "A cluster size;rows/cluster;A clusters",
     21, -0.5, 20.5 );
   */
+  TH1D hcol[4];
+  TH1D hrow[4];
+  TH1D hpxq[4];
+  TH2D * hmap[4];
+  TH1D hnpx[4];
+  TH1D hsiz[4];
+  TH1D hclq[4];
+  TH1D hncol[4];
+  TH1D hnrow[4];
 
   TH1D hncl[4];
   for( int mod = 0; mod < 4; ++mod ) {
+    char modtos;
+    switch(mod){
+    case 0: modtos = 'A'; break;
+    case 1: modtos =  'B'; break;
+    case 2: modtos = 'C'; break;  
+    case 3: modtos = 'D'; break;  
+    }
 
-    hncl[mod] = TH1D( Form( "ncl%i", mod ),
-		      Form( "plane %i cluster per event;cluster;plane %i events", mod, mod ),
+    hncl[mod] = TH1D( Form( "ncl%c", modtos ),
+		      Form( "plane %c cluster per event;cluster;plane %c events", modtos, modtos ),
 		      51, -0.5, 50.5 );
+    hcol[mod] = TH1D( Form("col%c", modtos),
+		      Form("%c col;col;%c pixels", modtos, modtos), 
+		      416, -0.5, 415.5 );
+    hrow[mod] = TH1D( Form("row%c",modtos),
+		      Form("%c row;row;%c pixels",modtos,modtos),
+		      160, -0.5, 159.5 );
+    hpxq[mod] = TH1D( Form("pxq%c",modtos),
+		      Form("%c pixel charge;pixel q [ke];%c pixels",modtos,modtos),
+		      100, 0, 25 );
+    hmap[mod] = new  TH2D( Form("pxmap%c",modtos),
+		      Form("%c pixel map;column;row;%c pixels",modtos,modtos),
+		      416, -0.5, 415.5, 160, -0.5, 159.5 );
+    hnpx[mod] = TH1D( Form("npx%c",modtos),
+		      Form("%c pixel per event;pixels;%c events",modtos,modtos),
+		      51, -0.5, 50.5 );
+    hsiz[mod] = TH1D( Form("clsz%c",modtos),
+		      Form("%c cluster size;pixels/cluster;%c clusters",modtos,modtos),
+		      51, -0.5, 50.5 );
+    hclq[mod] = TH1D( Form("clq%c",modtos),
+		      Form("%c cluster charge;cluster charge [ke];%c clusters",modtos,modtos),
+		      100, 0, 100 );
+    hncol[mod]= TH1D( Form("ncol%c",modtos), 
+		      Form("%c cluster size;columns/cluster;%c clusters",modtos,modtos),
+		      21, -0.5, 20.5 );
+    hnrow[mod]= TH1D( Form("nrow%c",modtos),
+		      Form("%c cluster size;rows/cluster;%c clusters",modtos,modtos),
+		      21, -0.5, 20.5 );
 
   } // module planes
 
@@ -784,6 +827,10 @@ int main( int argc, char* argv[] )
 	xm = plane.GetX(ipix); // global column 0..415
 	ym = plane.GetY(ipix); // global row 0..159
 	adc = plane.GetPixel(ipix); // ADC 0..255
+	
+	hcol[mod].Fill( xm );
+	hrow[mod].Fill( ym );
+	hmap[mod]->Fill( xm, ym );
 
 	// leave space for big pixels:
 
@@ -814,7 +861,10 @@ int main( int argc, char* argv[] )
 	  double a5 = p5[mod][roc][col][row];
 	  cal = PHtoVcal( adc, a0, a1, a2, a3, a4, a5, mod ); // [Vcal]
 	}
+	
+	hpxq[mod].Fill( cal*ke[mod] );
 
+	// fill pixel block for clustering
 	pb[npx].col = x;
 	pb[npx].row = y;
 	pb[npx].adc = adc;
@@ -874,6 +924,8 @@ int main( int argc, char* argv[] )
 	}
 
       } // pix
+      
+      hnpx[mod].Fill(npx);
 
       if( ldbg ) std::cout << std::endl;
 
@@ -887,6 +939,14 @@ int main( int argc, char* argv[] )
 
       hncl[mod].Fill( cl[mod].size() );
 
+      for( vector<cluster>::iterator cA = cl[mod].begin(); cA != cl[mod].end(); ++cA ) {
+
+      hsiz[mod].Fill( cA->size );
+      hclq[mod].Fill( cA->charge*ke[mod] );
+      hncol[mod].Fill( cA->ncol );
+      hnrow[mod].Fill( cA->nrow );
+
+      }
     } // planes = mod
 
     event_nr++;
