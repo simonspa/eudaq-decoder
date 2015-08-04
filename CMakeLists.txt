@@ -20,7 +20,8 @@ SET(INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE PATH "Prefix prepended to insta
 SET(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "Prefix prepended to install directories" FORCE)
 
 SET(SOURCE_FILES
-  "src/main.cc"
+  "src/eudaqevd4.cc"
+  # "src/main.cc"
   )
 
 # this UI and its libraries depend on ROOT:

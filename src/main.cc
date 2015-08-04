@@ -385,25 +385,7 @@ int main( int argc, char* argv[] )
   TFile* histoFile = new TFile( "main.root", "RECREATE" );
 
   // book histos:
-  /*
-    TH1D hcolA( "colA", "A col;col;A pixels", 416, -0.5, 415.5 );
-    TH1D hrowA( "rowA", "A row;row;A pixels", 160, -0.5, 159.5 );
-    TH1D hpxqA( "pxqA", "A pixel charge;pixel q [ke];A pixels",
-    100, 0, 25 );
-    TH2D * hmapA;
-    hmapA = new TH2D( "pxmapA", "A pixel map;column;row;A pixels",
-    416, -0.5, 415.5, 160, -0.5, 159.5 );
-    TH1D hnpxA( "npxA", "A pixel per event;pixels;A events",
-    51, -0.5, 50.5 );
-    TH1D hsizA( "clszA", "A cluster size;pixels/cluster;A clusters",
-    51, -0.5, 50.5 );
-    TH1D hclqA( "clqA", "A cluster charge;cluster charge [ke];A clusters",
-    100, 0, 100 );
-    TH1D hncolA( "ncolA", "A cluster size;columns/cluster;A clusters",
-    21, -0.5, 20.5 );
-    TH1D hnrowA( "nrowA", "A cluster size;rows/cluster;A clusters",
-    21, -0.5, 20.5 );
-  */
+ 
   TH1D hcol[4];
   TH1D hrow[4];
   TH1D hpxq[4];
@@ -423,7 +405,7 @@ int main( int argc, char* argv[] )
     case 2: modtos = 'C'; break;  
     case 3: modtos = 'D'; break;  
     }
-
+ 
     hncl[mod] = TH1D( Form( "ncl%c", modtos ),
 		      Form( "plane %c cluster per event;cluster;plane %c events", modtos, modtos ),
 		      51, -0.5, 50.5 );
