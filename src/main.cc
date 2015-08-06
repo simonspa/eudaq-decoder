@@ -1,5 +1,22 @@
+
+// Daniel Pitzl, Simon Spannagel, Simon Schnake (DESY) May-August 2015
+// module quadplets
+
+// eudecoder 000073
+
+
 #include "eudaq/FileReader.hh"
 #include "eudaq/PluginManager.hh"
+
+
+#include <stdlib.h> // atoi
+#include <iostream> // cout
+#include <iomanip> // setw
+#include <string> // strings
+#include <sstream> // stringstream
+#include <fstream> // files
+#include <vector>
+#include <cmath> // log, GBL
 
 #include <TFile.h>
 #include <TH1D.h>
@@ -7,6 +24,12 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 
+#include "GblTrajectory.h"
+#include <TMatrixD.h>
+#include <TMath.h>
+#include "MilleBinary.h"
+
+using namespace gbl;
 using namespace eudaq;
 using namespace std;
 
@@ -234,7 +257,7 @@ int main( int argc, char* argv[] )
     alignx[2] = -0.404; // [mm] same sign as dxCB
     aligny[2] =  0.292; // [mm] same sign as dy
     fx[2] = -0.0055; // [rad] rot, same     sign dxvsy
-    fy[2] =  0.0048; // [rad] rot, opposite sign dyvsx
+    fy[2] =   0.0048; // [rad] rot, opposite sign dyvsx
     tx[2] = 0.0003; // from dxvsx
     ty[2] =-0.0050; // from dyvsy, same sign
 
@@ -270,6 +293,8 @@ int main( int argc, char* argv[] )
     ke[3] = 0.050; // small Vcal -> ke
 
   }
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // gain parameters for mod roc col row:
 
   double ****p0 = new double ***[4];
   for( int i = 0; i < 4; ++i )

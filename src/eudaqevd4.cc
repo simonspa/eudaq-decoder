@@ -1,8 +1,8 @@
 
-// Daniel Pitzl, Simon Schnake (DESY) May-Aug 2015
+// Daniel Pitzl, Simon Spannagel, Simon Schnake (DESY) May-Aug 2015
 // event display 4 module planes
 
-// eudecoder -n 99 000073 (for 4028, 4035, 4030, 4023)
+// eudaqevd4 -n 99 000073 (for 4028, 4035, 4030, 4023)
 
 #include "eudaq/FileReader.hh"
 #include "eudaq/PluginManager.hh"
