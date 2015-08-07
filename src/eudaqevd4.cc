@@ -283,6 +283,31 @@ int main( int argc, char* argv[] )
 
   }
 
+  if( run >= 98 ) { // turn 0
+    
+    alignx[0] =-0.172; // [mm] same sign as dxAB
+    aligny[0] =-0.412; // [mm] same sign as dy
+    fx[0] =-0.0050; // [rad] rot, same sign dxvsy
+    fy[0] =-0.0055; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0000; // from dxvsx
+    ty[0] = 0.0000; // from dyvsy
+    
+    alignx[2] = 0.185; // [mm] same sign as dxCB
+    aligny[2] = 0.390; // [mm] same sign as dy
+    fx[2] =-0.0020; // [rad] rot, same sign dxvsy
+    fy[2] =-0.0023; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] = 0.0030; // from dyvsy, same sign
+      
+    alignx[3] = 0.228; // [mm] same sign as dxDB
+    aligny[3] = 0.253; // [mm] same sign as dy
+    fx[3] = 0.0035; // [rad] rot, same sign dxvsy
+    fy[3] = 0.0038; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] = 0.0005; // from dyvsy, same sign
+      
+  }
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // (re-)create root file:
 
