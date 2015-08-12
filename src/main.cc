@@ -23,6 +23,7 @@
 #include <TH2D.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
+#include <TVectorD.h>
 
 #include "GblTrajectory.h"
 #include <TMatrixD.h>
@@ -80,7 +81,7 @@ double PHtoVcal( double ph, double a0, double a1, double a2, double a3, double a
     cout << "PHtoVcal small a3  " << a3 << "  " << -Ared << " mod " << mod << endl;
     return ph;
   }
-
+ 
   double vc =
     a1 * ( pow( -log( -Ared / a3 ), 1/a2 ) - a0 );
 
@@ -120,7 +121,7 @@ vector<cluster> getClus()
   vector<cluster> v;
   if( fNHit == 0 ) return v;
 
-  int* gone = new int[fNHit];
+
 
   for( int i = 0; i < fNHit; ++i )
     gone[i] = 0;
@@ -263,7 +264,7 @@ int main( int argc, char* argv[] )
   double tx[4];
   double ty[4];
 
-    if( run >= 70 ) { // updated fo run 70
+  if( run >= 70 ) { // updated fo run 70
 
     alignx[0] = -1.162; // [mm] same sign as dxAB
     aligny[0] = -0.448; // [mm] same sign as dy
@@ -294,31 +295,81 @@ int main( int argc, char* argv[] )
     ty[3] =-0.0024; // from dyvsy, same sign
 
   }
+  if( run >= 79 ) { // updated fo run 79
+    
+    alignx[0] =-1.143952; // [mm] same sign as dxAB
+    aligny[0] =-0.42183; // [mm] same sign as dy
+    fx[0] =-0.0045; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.00725; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0000; // from dxvsx
+    ty[0] = 0.0000; // from dyvsy
 
-    if( run >= 98 ) { // turn 0
+    alignx[2] = 0.185; // [mm] same sign as dxCB
+    aligny[2] = 0.390; // [mm] same sign as dy
+    fx[2] =-0.0020; // [rad] rot, same     sign dxvsy
+    fy[2] =-0.0023; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] = 0.0030; // from dyvsy, same sign
 
-      alignx[0] =-0.172; // [mm] same sign as dxAB
-      aligny[0] =-0.412; // [mm] same sign as dy
-      fx[0] =-0.0050; // [rad] rot, same sign dxvsy
-      fy[0] =-0.0055; // [rad] rot, opposite sign dyvsx
-      tx[0] = 0.0000; // from dxvsx
-      ty[0] = 0.0000; // from dyvsy
+    alignx[3] = 0.228; // [mm] same sign as dxDB
+    aligny[3] = 0.253; // [mm] same sign as dy
+    fx[3] = 0.0035; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0038; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] = 0.0005; // from dyvsy, same sign
+    
+    
+  }
+  
+  if( run >= 98 ) { // turn 0
+    
+    alignx[0] =-0.172; // [mm] same sign as dxAB
+    aligny[0] =-0.412; // [mm] same sign as dy
+    fx[0] =-0.0050; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.0055; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0000; // from dxvsx
+    ty[0] = 0.0000; // from dyvsy
 
-      alignx[2] = 0.185; // [mm] same sign as dxCB
-      aligny[2] = 0.390; // [mm] same sign as dy
-      fx[2] =-0.0020; // [rad] rot, same sign dxvsy
-      fy[2] =-0.0023; // [rad] rot, opposite sign dyvsx
-      tx[2] = 0.0000; // from dxvsx
-      ty[2] = 0.0030; // from dyvsy, same sign
+    alignx[2] = 0.185; // [mm] same sign as dxCB
+    aligny[2] = 0.390; // [mm] same sign as dy
+    fx[2] =-0.0020; // [rad] rot, same     sign dxvsy
+    fy[2] =-0.0023; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] = 0.0030; // from dyvsy, same sign
+
+    alignx[3] = 0.228; // [mm] same sign as dxDB
+    aligny[3] = 0.253; // [mm] same sign as dy
+    fx[3] = 0.0035; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0038; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] = 0.0005; // from dyvsy, same sign
+
+  }
+  if( run >= 108 ) { // turn 0
+
+    alignx[0] =-0.025; // [mm] same sign as dxAB
+    aligny[0] =0.153; // [mm] same sign as dy
+    fx[0] =-0.0050; // [rad] rot, same sign dxvsy
+    fy[0] =-0.006425; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0000; // from dxvsx
+    ty[0] = 0.0010; // from dyvsy
+
+    alignx[2] = -0.371; // [mm] same sign as dxCB
+    aligny[2] = -0.635; // [mm] same sign as dy
+    fx[2] =-0.0087; // [rad] rot, same sign dxvsy
+    fy[2] =-0.0113; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] = 0.0030; // from dyvsy, same sign
       
-      alignx[3] = 0.228; // [mm] same sign as dxDB
-      aligny[3] = 0.253; // [mm] same sign as dy
-      fx[3] = 0.0035; // [rad] rot, same sign dxvsy
-      fy[3] = 0.0038; // [rad] rot, opposite sign dyvsx
-      tx[3] = 0.0000; // from dxvsx
-      ty[3] = 0.0005; // from dyvsy, same sign
+    alignx[3] = 0.13; // [mm] same sign as dxDB
+    aligny[3] = -0.231; // [mm] same sign as dy
+    fx[3] = 0.1015; // [rad] rot, same sign dxvsy
+    fy[3] = -0.001; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] = 0.0005; // from dyvsy, same sign
       
-    }
+  }
+
   // write alignemnt to file (for adding millepede.res)
 
   ofstream alignFile( "align4.dat" );
@@ -974,6 +1025,10 @@ int main( int argc, char* argv[] )
   TH1D hnADB( "nADB", "ADBplets;ADBplets;events", 21, -0.5, 20.5 );
   TH1D hn4ev( "n4ev", "4plets;4plets;events", 21, -0.5, 20.5 );
 
+
+  //kink
+  TH1D hresx("resx", "Scatering Residuals in x",2100,-0.005,0.005);
+  TH1D hresy("resy", "Scatering Residuals in y",2100,-0.005,0.005);
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // event loop:
 
@@ -2050,7 +2105,19 @@ int main( int argc, char* argv[] )
 
 	    if( probchi > 0.01 ) // bias with bad alignment ?
 	      traj.milleOut( *mille );
+	    //------------------------------------------------------------------
+	    //Kink-Measurement
+	    unsigned int aLabel=2;
+	    unsigned int numData;
+	    TVectorD aResiduals(2);
+	    TVectorD aMeasErrors(2);
+	    TVectorD aResErrors(2);
+	    TVectorD aDownWeights(2);
+	    traj.getScatResults(aLabel,numData,aResiduals,aMeasErrors,aResErrors,aDownWeights);
 
+	    hresx.Fill(aResiduals[0]);
+	    hresy.Fill(aResiduals[1]);
+	    //-----------------------------------------------------------------
 	  } // cl C
 
 	  effCvst.Fill( event_nr, nm[14] );
@@ -2084,7 +2151,7 @@ int main( int argc, char* argv[] )
     hnADB.Fill( nADB );
     hn4ev.Fill( n4ev );
 
-    if( !(nevA%10000) ) cout << "event " << nevA << endl;
+    if(ldbg ) cout << "event " << event_nr << endl;
 
   } while (reader.NextEvent());
 
