@@ -2,12 +2,10 @@
 // Daniel Pitzl, Simon Spannagel, Simon Schnake (DESY) May-August 2015
 // module quadplets
 
-// eudecoder 000073
-
+// eudecoder -l 99999  184
 
 #include "eudaq/FileReader.hh"
 #include "eudaq/PluginManager.hh"
-
 
 #include <stdlib.h> // atoi
 #include <iostream> // cout
@@ -74,11 +72,11 @@ double PHtoVcal( double ph, double a0, double a1, double a2, double a3, double a
   // large Vcal = ( (-ln(-(A-a4)/a3))^1/a2 - a0 )*a1
 
   if( a3 < 1E-9 ) {
-    cout << "PHtoVcal zero a3  " << a3 << endl;
+    //cout << "PHtoVcal zero a3  " << a3 << endl;
     return ph;
   }
   else if( -Ared > a3 ) {
-    cout << "PHtoVcal small a3  " << a3 << "  " << -Ared << " mod " << mod << endl;
+    //cout << "PHtoVcal small a3  " << a3 << "  " << -Ared << " mod " << mod << endl;
     return ph;
   }
  
@@ -121,7 +119,7 @@ vector<cluster> getClus()
   vector<cluster> v;
   if( fNHit == 0 ) return v;
 
-
+  int* gone = new int[fNHit];
 
   for( int i = 0; i < fNHit; ++i )
     gone[i] = 0;
@@ -234,8 +232,6 @@ TMatrixD Jac5( double ds ) // for GBL
 }
 
 //------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
 int main( int argc, char* argv[] )
 {
   cout << "main " << argv[0] << " called with " << argc << " arguments" << endl;
@@ -251,9 +247,28 @@ int main( int argc, char* argv[] )
   int run = atoi( argv[argc-1] );
 
   cout << "run " << run << endl;
+  FileReader * reader;
+  if( run < 100 )
+    reader = new FileReader( runnum.c_str(), "data/run0000$2R$X");
+  else if( run < 1000 )
+    reader = new FileReader( runnum.c_str(), "data/run000$3R$X");
+  else if( run < 10000 )
+    reader = new FileReader( runnum.c_str(), "data/run00$4R$X");
+  else if( run < 100000 )
+    reader = new FileReader( runnum.c_str(), "data/run0$5R$X");
+  else
+    reader = new FileReader( runnum.c_str(), "data/run$6R$X");
 
-  //FileReader reader = FileReader("000073", "run$6R$X");
-  FileReader reader = FileReader(runnum.c_str(), "run$6R$X");
+  // further arguments:
+
+  int lev = 999222111; // last event
+
+  for( int i = 1; i < argc; ++i ) {
+
+    if( !strcmp( argv[i], "-l" ) )
+      lev = atoi( argv[++i] );
+
+  } // argc
 
   // alignments:
 
@@ -264,6 +279,38 @@ int main( int argc, char* argv[] )
   double tx[4];
   double ty[4];
 
+  if( run >= 0 ) { // default
+
+    alignx[0] = 0.000; // [mm] same sign as dxAB
+    aligny[0] = 0.000; // [mm] same sign as dy
+    fx[0] = 0.0000; // [rad] rot, same     sign dxvsy
+    fy[0] = 0.0000; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0000; // from dxvsx
+    ty[0] = 0.0000; // from dyvsy
+
+    alignx[1] = 0.000; // [mm] fix
+    aligny[1] = 0.000; // [mm] fix
+    fx[1] = 0.0000; // [rad] fix
+    fy[1] = 0.0000; // [rad] fix
+    tx[1] = 0.0000; // from fix
+    ty[1] = 0.0000; // from fix
+
+    alignx[2] = 0.000; // [mm] same sign as dxCB
+    aligny[2] = 0.000; // [mm] same sign as dy
+    fx[2] = 0.0000; // [rad] rot, same     sign dxvsy
+    fy[2] = 0.0000; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] = 0.0000; // from dyvsy, same sign
+
+    alignx[3] = 0.000; // [mm] same sign as dxDB
+    aligny[3] = 0.000; // [mm] same sign as dy
+    fx[3] = 0.0000; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0000; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] = 0.0000; // from dyvsy, same sign
+
+  }
+
   if( run >= 70 ) { // updated fo run 70
 
     alignx[0] = -1.162; // [mm] same sign as dxAB
@@ -272,13 +319,6 @@ int main( int argc, char* argv[] )
     fy[0] = -0.007; // [rad] rot, opposite sign dyvsx
     tx[0] = 0.0005; // from dxvsx
     ty[0] = 0.0006; // from dyvsy
-
-    alignx[1] = 0; // same sign as dx
-    aligny[1] = 0; // same sign as dy
-    fx[1] = 0; // rot, opposite sign dyvsx
-    fy[1] = 0;
-    tx[1] = 0;
-    ty[1] = 0;
 
     alignx[2] = -0.404; // [mm] same sign as dxCB
     aligny[2] =  0.292; // [mm] same sign as dy
@@ -318,9 +358,63 @@ int main( int argc, char* argv[] )
     tx[3] = 0.0000; // from dxvsx
     ty[3] = 0.0005; // from dyvsy, same sign
     
-    
   }
-  
+
+  if( run >= 82 ) { // Mon 3.8.2015 tilt and turn, no abs, vent
+
+    alignx[0] = -0.554; // [mm] same sign as dxAB
+    aligny[0] = -0.418; // [mm] same sign as dy
+    fx[0] =-0.0026; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.0070; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0000; // from dxvsx
+    ty[0] = 0.0030; // from dyvsy
+
+    alignx[2] =-0.010; // [mm] same sign as dxCB
+    aligny[2] = 0.260; // [mm] same sign as dy
+    fx[2] =-0.0010; // [rad] rot, same     sign dxvsy
+    fy[2] = 0.0035; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] =-0.0015; // from dyvsy, same sign
+
+    alignx[3] =-1.317; // [mm] same sign as dxDB
+    aligny[3] = 0.518; // [mm] same sign as dy
+    fx[3] = 0.0025; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0010; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] = 0.0030; // from dyvsy, same sign
+
+    // pedeAD
+
+    alignx[0] = -0.551188;
+    aligny[0] = -0.441881;
+    fx[0] = -0.00777179;
+    fy[0] = 0.00384919;
+    tx[0] = 1.5555e-05;
+    ty[0] = 0.00281544;
+
+    alignx[1] = 0.0001718;
+    aligny[1] = 0.00069697;
+    fx[1] = 0.00010188;
+    fy[1] = -2.6411e-05;
+    tx[1] = -0.00015443;
+    ty[1] = 0.00060918;
+
+    alignx[2] = -0.0120149;
+    aligny[2] = 0.25318;
+    fx[2] = 0.00417489;
+    fy[2] = -0.00719094;
+    tx[2] = -0.00023588;
+    ty[2] = -0.00186037;
+
+    alignx[3] = -1.32143;
+    aligny[3] = 0.570778;
+    fx[3] = 0.0128231;
+    fy[3] = -0.0204937;
+    tx[3] = 4.8465e-05;
+    ty[3] = 0.00319946;
+
+  }
+
   if( run >= 98 ) { // turn 0
     
     alignx[0] =-0.172; // [mm] same sign as dxAB
@@ -345,6 +439,7 @@ int main( int argc, char* argv[] )
     ty[3] = 0.0005; // from dyvsy, same sign
 
   }
+
   if( run >= 108 ) { // turn 0
 
     alignx[0] =-0.025; // [mm] same sign as dxAB
@@ -368,6 +463,206 @@ int main( int argc, char* argv[] )
     tx[3] = 0.0000; // from dxvsx
     ty[3] = 0.0005; // from dyvsy, same sign
       
+  }
+
+  if( run >= 127 ) { // Sat 8.8.2015
+
+    alignx[0] =-0.363; // [mm] same sign as dxAB
+    aligny[0] =-0.735; // [mm] same sign as dy
+    fx[0] =-0.0110; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.0112; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0000; // from dxvsx
+    ty[0] =-0.0020; // from dyvsy
+
+    alignx[2] =-0.215; // [mm] same sign as dxCB
+    aligny[2] =-0.300; // [mm] same sign as dy
+    fx[2] =-0.0060; // [rad] rot, same     sign dxvsy
+    fy[2] =-0.0065; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] =-0.0010; // from dyvsy, same sign
+
+    alignx[3] = 0.260; // [mm] same sign as dxDB
+    aligny[3] = 0.147; // [mm] same sign as dy
+    fx[3] =-0.0080; // [rad] rot, same     sign dxvsy
+    fy[3] =-0.0082; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] = 0.0010; // from dyvsy, same sign
+
+  }
+
+  if( run >= 134 ) { // Sat 8.8.2015
+
+    alignx[0] =-0.572; // [mm] same sign as dxAB
+    aligny[0] =-0.815; // [mm] same sign as dy
+    fx[0] =-0.0036; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.0030; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0000; // from dxvsx
+    ty[0] =-0.0020; // from dyvsy
+
+    alignx[2] =-0.440; // [mm] same sign as dxCB
+    aligny[2] =-0.415; // [mm] same sign as dy
+    fx[2] = 0.0020; // [rad] rot, same     sign dxvsy
+    fy[2] = 0.0019; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] =-0.0010; // from dyvsy, same sign
+
+    alignx[3] =-0.240; // [mm] same sign as dxDB
+    aligny[3] =-0.056; // [mm] same sign as dy
+    fx[3] = 0.0085; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0087; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] = 0.0010; // from dyvsy, same sign
+
+  }
+
+  if( run >= 139 ) { // default
+
+    alignx[0] = 0.263; // [mm] same sign as dxAB
+    aligny[0] = 0.457; // [mm] same sign as dy
+    fx[0] = 0.0065; // [rad] rot, same     sign dxvsy
+    fy[0] = 0.0070; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0000; // from dxvsx
+    ty[0] = 0.0020; // from dyvsy
+
+    alignx[2] = 0.685; // [mm] same sign as dxCB
+    aligny[2] = 0.975; // [mm] same sign as dy
+    fx[2] = 0.0095; // [rad] rot, same     sign dxvsy
+    fy[2] = 0.0020; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] = 0.0080; // from dyvsy, same sign
+
+    alignx[3] = 0.200; // [mm] same sign as dxDB
+    aligny[3] = 0.777; // [mm] same sign as dy
+    fx[3] = 0.0120; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0120; // [rad] rot, opposite sign dyvsx
+    tx[3] =-0.0020; // from dxvsx
+    ty[3] = 0.0030; // from dyvsy, same sign
+
+  }
+
+  if( run >= 147 ) { // default
+
+    alignx[0] =-0.125; // [mm] same sign as dxAB
+    aligny[0] =-0.975; // [mm] same sign as dy
+    fx[0] =-0.0090; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.0018; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0030; // from dxvsx
+    ty[0] =-0.0100; // from dyvsy
+
+    alignx[2] =-0.180; // [mm] same sign as dxCB
+    aligny[2] =-0.530; // [mm] same sign as dy
+    fx[2] =-0.0055; // [rad] rot, same     sign dxvsy
+    fy[2] = 0.0050; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0015; // from dxvsx
+    ty[2] =-0.0100; // from dyvsy, same sign
+
+    alignx[3] =-0.105; // [mm] same sign as dxDB
+    aligny[3] =-0.165; // [mm] same sign as dy
+    fx[3] = 0.0030; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0106; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0010; // from dxvsx
+    ty[3] =-0.0060; // from dyvsy, same sign
+
+  }
+
+  if( run >= 150 ) { // 40 mm spacing
+
+    alignx[0] =-0.995; // [mm] same sign as dxAB
+    aligny[0] =-0.685; // [mm] same sign as dy
+    fx[0] = 0.0050; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.0057; // [rad] rot, opposite sign dyvsx
+    tx[0] =-0.0020; // from dxvsx
+    ty[0] = 0.0060; // from dyvsy
+
+    alignx[2] =-0.050; // [mm] same sign as dxCB
+    aligny[2] = 0.635; // [mm] same sign as dy
+    fx[2] = 0.0200; // [rad] rot, same     sign dxvsy
+    fy[2] = 0.0070; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0000; // from dxvsx
+    ty[2] = 0.0090; // from dyvsy, same sign
+
+    alignx[3] = 0.335; // [mm] same sign as dxDB
+    aligny[3] = 0.965; // [mm] same sign as dy
+    fx[3] = 0.0070; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0000; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0040; // from dxvsx
+    ty[3] = 0.0070; // from dyvsy, same sign
+
+  }
+
+  if( run >= 164 ) { // default
+
+    alignx[0] =-0.225; // [mm] same sign as dxAB
+    aligny[0] =-0.695; // [mm] same sign as dy
+    fx[0] = 0.0045; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.0056; // [rad] rot, opposite sign dyvsx
+    tx[0] = 0.0020; // from dxvsx
+    ty[0] = 0.0030; // from dyvsy
+
+    alignx[2] = 0.160; // [mm] same sign as dxCB
+    aligny[2] = 0.745; // [mm] same sign as dy
+    fx[2] = 0.0075; // [rad] rot, same     sign dxvsy
+    fy[2] =-0.0007; // [rad] rot, opposite sign dyvsx
+    tx[2] =-0.0020; // from dxvsx
+    ty[2] = 0.0060; // from dyvsy, same sign
+
+    alignx[3] = 1.150; // [mm] same sign as dxDB
+    aligny[3] = 1.015; // [mm] same sign as dy
+    fx[3] =-0.0042; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0070; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] =-0.0010; // from dyvsy, same sign
+
+  }
+
+  if( run >= 178 ) { // Wed 12.8.2015
+
+    alignx[0] =-0.086; // [mm] same sign as dxAB
+    aligny[0] =-0.257; // [mm] same sign as dy
+    fx[0] =-0.0035; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.0045; // [rad] rot, opposite sign dyvsx
+    tx[0] =-0.0050; // from dxvsx
+    ty[0] = 0.0000; // from dyvsy
+
+    alignx[2] = 0.400; // [mm] same sign as dxCB
+    aligny[2] = 0.195; // [mm] same sign as dy
+    fx[2] = 0.0200; // [rad] rot, same     sign dxvsy
+    fy[2] = 0.0070; // [rad] rot, opposite sign dyvsx
+    tx[2] = 0.0030; // from dxvsx
+    ty[2] = 0.0080; // from dyvsy, same sign
+
+    alignx[3] = 0.455; // [mm] same sign as dxDB
+    aligny[3] = 0.335; // [mm] same sign as dy
+    fx[3] =-0.0020; // [rad] rot, same     sign dxvsy
+    fy[3] = 0.0000; // [rad] rot, opposite sign dyvsx
+    tx[3] = 0.0000; // from dxvsx
+    ty[3] = 0.0030; // from dyvsy, same sign
+
+  }
+
+  if( run >= 185 ) { // Sat 15.8.2015
+
+    alignx[0] =-0.295; // [mm] same sign as dxAB
+    aligny[0] =-0.1952461; // [mm] same sign as dy
+    fx[0] =-0.013913; // [rad] rot, same     sign dxvsy
+    fy[0] =-0.0058; // [rad] rot, opposite sign dyvsx
+    tx[0] =-0.0060; // from dxvsx
+    ty[0] =-0.0050; // from dyvsy
+
+    alignx[2] = 0.18451; // [mm] same sign as dxCB
+    aligny[2] = 0.20596; // [mm] same sign as dy
+    fx[2] = 0.018575; // [rad] rot, same     sign dxvsy
+    fy[2] = 0.0050810; // [rad] rot, opposite sign dyvsx
+    tx[2] =-0.0030; // from dxvsx
+    ty[2] = 0.0120; // from dyvsy, same sign
+
+    alignx[3] = 0.57803; // [mm] same sign as dxDB
+    aligny[3] = 0.41265; // [mm] same sign as dy
+    fx[3] =-0.022238; // [rad] rot, same     sign dxvsy
+    fy[3] =-0.00023016; // [rad] rot, opposite sign dyvsx
+    tx[3] =-0.0060; // from dxvsx
+    ty[3] =-0.0030; // from dyvsy, same sign
+
   }
 
   // write alignemnt to file (for adding millepede.res)
@@ -406,7 +701,12 @@ int main( int argc, char* argv[] )
 
   // for GBL:
 
-  double dz = 22.5; // [mm] projected z spacing
+  //double dz = 22.5; // [mm] projected z spacing
+  double dz = 80;
+
+  if( run > 150 ) {
+    dz = 40.0;
+  }
 
   double resx = 6.6E-3; // [mm] col hit resolution
   double resy = 5.5E-3; // [mm] row hit resolution
@@ -419,6 +719,7 @@ int main( int argc, char* argv[] )
   double X0Si = (0.3 + 0.175 + 3.0 ) / 94; // Sensor + ROC + Alu
 
   // measurement = residual
+
   TVectorD meas(2);
   meas.Zero(); // ideal
 
@@ -434,7 +735,42 @@ int main( int argc, char* argv[] )
   scat.Zero(); // mean is zero
 
   double p = 5.2; // [GeV]
+  if( run == 154 ) p = 4.8;
+  if( run == 156 ) p = 1.2;
+  if( run == 157 ) p = 1.8;
+  if( run == 158 ) p = 2.4;
+  if( run == 159 ) p = 3.0;
+  if( run == 160 ) p = 3.6;
+  if( run >= 161 ) p = 4.2;
+  if( run >= 164 ) p = 5.2;
+  if( run >= 165 ) p = 1.2;
+  if( run >= 166 ) p = 1.6;
+  if( run >= 167 ) p = 2.0;
+  if( run >= 168 ) p = 2.6;
+  if( run >= 169 ) p = 3.4;
+  if( run >= 170 ) p = 4.4;
+  if( run >= 172 ) p = 5.2;
+  if( run >= 174 ) p = 4.8;
+  if( run >= 178 ) p = 4.4;
+  if( run >= 179 ) p = 3.4;
+  if( run >= 180 ) p = 2.6;
+  if( run >= 181 ) p = 2.0;
+  if( run >= 182 ) p = 1.6;
+  if( run >= 184 ) p = 1.2;
+
   double tetSi = 0.0136 * sqrt(X0Si) / p * ( 1 + 0.038*log(X0Si) );
+
+  // linking cuts:
+
+  double cutx = 0.15; // [mm]
+  double cuty = 0.15; // [mm]
+
+  if( cutx < 3*dz*tetSi ) {
+    cutx = 3*dz*tetSi;
+    cuty = 3*dz*tetSi;
+  }
+
+  cout << "\nlinking cuts " << cutx << ", " << cuty << " mm\n" << endl;
 
   TVectorD wscatSi(2);
   wscatSi[0] = 1.0 / ( tetSi * tetSi ); // weight
@@ -476,7 +812,6 @@ int main( int argc, char* argv[] )
 
   MilleBinary * mille = new MilleBinary( "mille.bin" );
 
-
   // Landau peak cuts: Mon 27.7.2015
 
   double qL = 22; // [ke]
@@ -500,6 +835,55 @@ int main( int argc, char* argv[] )
     ke[3] = 0.050; // small Vcal -> ke
 
   }
+
+  if( run > 80 ) { // ventilation
+
+    gainFileName[0] = "D4028/D4028-vent-gaincal.dat"; // Jul 2015
+    ke[0] = 0.048; // small Vcal -> ke
+
+    gainFileName[1] = "D4035/D4035-vent-gaincal.dat"; // Jul 2015
+    ke[1] = 0.053; // small Vcal -> ke
+
+    gainFileName[2] = "D4030/D4030-vent-gaincal.dat"; // Jul 2015
+    ke[2] = 0.049; // small Vcal -> ke
+
+    gainFileName[3] = "D4023/D4023-vent-gaincal.dat"; // Jul 2015
+    ke[3] = 0.050; // small Vcal -> ke
+
+  }
+
+  if( run >= 164 ) { // ventilation, new module
+
+    gainFileName[0] = "D4028/D4028-vent-gaincal.dat"; // Jul 2015
+    ke[0] = 0.045; // small Vcal -> ke
+
+    gainFileName[1] = "D4035/D4035-vent-gaincal.dat"; // Jul 2015
+    ke[1] = 0.0485; // small Vcal -> ke
+
+    gainFileName[2] = "D4043/D4043-tb-gaincal.dat"; // Aug 2015
+    ke[2] = 0.043; // small Vcal -> ke
+
+    gainFileName[3] = "D4030/D4030-vent-gaincal.dat"; // Jul 2015
+    ke[3] = 0.045; // small Vcal -> ke
+
+  }
+
+  if( run >= 178 ) { // ventilation, rearranged
+
+    gainFileName[0] = "D4028/D4028-vent-gaincal.dat"; // Jul 2015
+    ke[0] = 0.045; // small Vcal -> ke
+
+    gainFileName[1] = "D4035/D4035-vent-gaincal.dat"; // Jul 2015
+    ke[1] = 0.0485; // small Vcal -> ke
+
+    gainFileName[2] = "D4030/D4030-vent-gaincal.dat"; // Jul 2015
+    ke[2] = 0.045; // small Vcal -> ke
+
+    gainFileName[3] = "D4043/D4043-tb-gaincal.dat"; // Aug 2015
+    ke[3] = 0.043; // small Vcal -> ke
+
+  }
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // gain parameters for mod roc col row:
 
@@ -606,18 +990,14 @@ int main( int argc, char* argv[] )
 
       } // gainFile open
 
-     } // gainFileName
+    } // gainFileName
 
   } // mod
-  
-  
-  int modlist[4] = { 0, 2, 3, 1 }; // mapping Simon along the beam
-  
   
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // (re-)create root file:
 
-  TFile* histoFile = new TFile( "main.root", "RECREATE" );
+  TFile* histoFile = new TFile(Form("run%s.root",runnum.c_str()), "RECREATE" );
 
   // book histos:
  
@@ -634,43 +1014,43 @@ int main( int argc, char* argv[] )
   TH1D hncl[4];
   for( int mod = 0; mod < 4; ++mod ) {
     char modtos;
-    switch(modlist[mod]){
+    switch( mod ) {
     case 0: modtos = 'A'; break;
-    case 1: modtos =  'B'; break;
+    case 1: modtos = 'B'; break;
     case 2: modtos = 'C'; break;  
     case 3: modtos = 'D'; break;  
     }
  
-    hncl[modlist[mod]] = TH1D( Form( "ncl%c", modtos ),
-		      Form( "plane %c cluster per event;cluster;plane %c events", modtos, modtos ),
-		      51, -0.5, 50.5 );
-    hcol[modlist[mod]] = TH1D( Form("col%c", modtos),
-		      Form("%c col;col;%c pixels", modtos, modtos), 
-		      416, -0.5, 415.5 );
-    hrow[modlist[mod]] = TH1D( Form("row%c",modtos),
-		      Form("%c row;row;%c pixels",modtos,modtos),
-		      160, -0.5, 159.5 );
-    hpxq[modlist[mod]] = TH1D( Form("pxq%c",modtos),
-		      Form("%c pixel charge;pixel q [ke];%c pixels",modtos,modtos),
-		      100, 0, 25 );
-    hmap[modlist[mod]] = new  TH2D( Form("pxmap%c",modtos),
-		      Form("%c pixel map;column;row;%c pixels",modtos,modtos),
-		      416, -0.5, 415.5, 160, -0.5, 159.5 );
-    hnpx[modlist[mod]] = TH1D( Form("npx%c",modtos),
-		      Form("%c pixel per event;pixels;%c events",modtos,modtos),
-		      51, -0.5, 50.5 );
-    hsiz[modlist[mod]] = TH1D( Form("clsz%c",modtos),
-		      Form("%c cluster size;pixels/cluster;%c clusters",modtos,modtos),
-		      51, -0.5, 50.5 );
-    hclq[modlist[mod]] = TH1D( Form("clq%c",modtos),
-		      Form("%c cluster charge;cluster charge [ke];%c clusters",modtos,modtos),
-		      100, 0, 100 );
-    hncol[modlist[mod]]= TH1D( Form("ncol%c",modtos), 
-		      Form("%c cluster size;columns/cluster;%c clusters",modtos,modtos),
-		      21, -0.5, 20.5 );
-    hnrow[modlist[mod]]= TH1D( Form("nrow%c",modtos),
-		      Form("%c cluster size;rows/cluster;%c clusters",modtos,modtos),
-		      21, -0.5, 20.5 );
+    hncl[mod] = TH1D( Form( "ncl%c", modtos ),
+			       Form( "plane %c cluster per event;cluster;plane %c events", modtos, modtos ),
+			       51, -0.5, 50.5 );
+    hcol[mod] = TH1D( Form("col%c", modtos),
+			       Form("%c col;col;%c pixels", modtos, modtos), 
+			       416, -0.5, 415.5 );
+    hrow[mod] = TH1D( Form("row%c",modtos),
+			       Form("%c row;row;%c pixels",modtos,modtos),
+			       160, -0.5, 159.5 );
+    hpxq[mod] = TH1D( Form("pxq%c",modtos),
+			       Form("%c pixel charge;pixel q [ke];%c pixels",modtos,modtos),
+			       100, 0, 25 );
+    hmap[mod] = new  TH2D( Form("pxmap%c",modtos),
+				    Form("%c pixel map;column;row;%c pixels",modtos,modtos),
+				    416, -0.5, 415.5, 160, -0.5, 159.5 );
+    hnpx[mod] = TH1D( Form("npx%c",modtos),
+			       Form("%c pixel per event;pixels;%c events",modtos,modtos),
+			       51, -0.5, 50.5 );
+    hsiz[mod] = TH1D( Form("clsz%c",modtos),
+			       Form("%c cluster size;pixels/cluster;%c clusters",modtos,modtos),
+			       51, -0.5, 50.5 );
+    hclq[mod] = TH1D( Form("clq%c",modtos),
+			       Form("%c cluster charge;cluster charge [ke];%c clusters",modtos,modtos),
+			       100, 0, 100 );
+    hncol[mod]= TH1D( Form("ncol%c",modtos), 
+			       Form("%c cluster size;columns/cluster;%c clusters",modtos,modtos),
+			       21, -0.5, 20.5 );
+    hnrow[mod]= TH1D( Form("nrow%c",modtos),
+			       Form("%c cluster size;rows/cluster;%c clusters",modtos,modtos),
+			       21, -0.5, 20.5 );
 
   } // module planes
   TH2D hxxAB( "xxAB", "A vs B;col B;col A;clusters",
@@ -693,7 +1073,7 @@ int main( int argc, char* argv[] )
 		    81, 0, 16.2, -1, 1 );
 
   TProfile mABvst( "mABvst", "AB matches vs time;trigger;AB matches",
-		     200, 0E6, 2E6, -1, 2 );
+		   200, 0E6, 2E6, -1, 2 );
 
   TH2D hxxCB( "xxCB", "C vs B;col B;col C;clusters",
 	      432, 0, 64.8, 432, 0, 64.8 );
@@ -715,7 +1095,7 @@ int main( int argc, char* argv[] )
 		    81, 0, 16.2, -1, 1 );
 
   TProfile mCBvst( "mCBvst", "CB matches vs time;trigger;CB matches",
-		     200, 0E6, 2E6, -1, 2 );
+		   200, 0E6, 2E6, -1, 2 );
 
   TH2D hxxDC( "xxDC", "D vs C;col C;col D;clusters",
 	      432, 0, 64.8, 432, 0, 64.8 );
@@ -760,7 +1140,7 @@ int main( int argc, char* argv[] )
 		    81, 0, 16.2, -1, 1 );
 
   TProfile mDBvst( "mDBvst", "DB matches vs time;trigger;DB matches",
-		     200, 0E6, 2E6, -1, 2 );
+		   200, 0E6, 2E6, -1, 2 );
 
   TH2D hxxDA( "xxDA", "D vs A;col A;col D;clusters",
 	      432, 0, 64.8, 432, 0, 64.8 );
@@ -815,53 +1195,53 @@ int main( int argc, char* argv[] )
   TH1D hdxcACB( "dxcACB", "ACB dx;x-x [#mum];ACBs", 200, -200, 200 );
   TH1D hdycACB( "dycACB", "ACB dy;y-y [#mum];ACBs", 200, -200, 200 );
   TH1D hdxciACB( "dxciACB", "ACB dx;x-x [#mum];isolated ACBs",
-		  200, -200, 200 );
+		 200, -200, 200 );
   TH1D hdyciACB( "dyciACB", "ACB dy;y-y [#mum];isolated ACBs",
-		  200, -200, 200 );
+		 200, -200, 200 );
   TH1D hdycfACB( "dycfACB", "ACB dy;y-y [#mum];inner ACBs",
-		  200, -200, 200 );
+		 200, -200, 200 );
   TH1D hdycfqACB( "dycfqACB", "ACB dy;y-y [#mum];Landau peak inner ACBs",
 		  200, -200, 200 );
 
   TProfile dxvsxACB( "dxvsxACB",
-		      "ACB dx vs x;x [mm];ACB <dx>",
-		      216, 0, 64.8, -1, 1 );
+		     "ACB dx vs x;x [mm];ACB <dx>",
+		     216, 0, 64.8, -1, 1 );
   TProfile dxvsyACB( "dxvsyACB",
-		      "ACB dx vs y;y [mm];ACB <dx>",
-		      81, 0, 16.2, -1, 1 );
+		     "ACB dx vs y;y [mm];ACB <dx>",
+		     81, 0, 16.2, -1, 1 );
   TProfile dyvsxACB( "dyvsxACB",
-		      "ACB dy vs x;x [mm];ACB <dy>",
-		      216, 0, 64.8, -1, 1 );
+		     "ACB dy vs x;x [mm];ACB <dy>",
+		     216, 0, 64.8, -1, 1 );
   TProfile dyvsyACB( "dyvsyACB",
-		      "ACB dy vs y;y [mm];ACB <dy>",
-		      81, 0, 16.2, -1, 1 );
+		     "ACB dy vs y;y [mm];ACB <dy>",
+		     81, 0, 16.2, -1, 1 );
   TProfile madyvsyACB( "madyvsyACB",
-		      "ACB mady vs y;y [mm];ACB MAD(y) [#mum]",
-		      81, 0, 16.2, 0, 100 );
+		       "ACB mady vs y;y [mm];ACB MAD(y) [#mum]",
+		       81, 0, 16.2, 0, 100 );
   TProfile madyvsxACB( "madyvsxACB",
-		      "ACB mady vs x;x [mm];ACB MAD(y) [#mum]",
-		      216, 0, 64.8, 0, 100 );
+		       "ACB mady vs x;x [mm];ACB MAD(y) [#mum]",
+		       216, 0, 64.8, 0, 100 );
   TProfile madyvsymACB( "madyvsymACB",
-		      "ACB mady vs ymod;y mod 200 [#mum];ACB MAD(y) [#mum]",
-		      40, 0, 200, 0, 100 );
+			"ACB mady vs ymod;y mod 200 [#mum];ACB MAD(y) [#mum]",
+			40, 0, 200, 0, 100 );
   TProfile madyvsqACB( "madyvsqACB",
-		      "ACB mady vs q;q B [ke];ACB MAD(y) [#mum]",
-		      100, 0, 100, 0, 100 );
+		       "ACB mady vs q;q B [ke];ACB MAD(y) [#mum]",
+		       100, 0, 100, 0, 100 );
   TH2D * hmapACB;
   hmapACB = new TH2D( "mapACB",
-		       "ACBplet map;ACBplet col;ACBplet row;ACBplets",
+		      "ACBplet map;ACBplet col;ACBplet row;ACBplets",
 		      8*54, 0, 8*8.1, 2*81, 0, 2*8.1 );
 
   // Bvs AC:
 
   TH1D hsizB4( "clszB4", "B cluster size;pixels/cluster;B4 clusters",
-	      51, -0.5, 50.5 );
+	       51, -0.5, 50.5 );
   TH1D hclqB4( "clqB4", "B cluster charge;cluster charge [ke];B4 clusters",
-	      100, 0, 100 );
+	       100, 0, 100 );
   TH1D hncolB4( "ncolB4", "B cluster size;columns/cluster;B4 clusters",
-	       21, -0.5, 20.5 );
+		21, -0.5, 20.5 );
   TH1D hnrowB4( "nrowB4", "B cluster size;rows/cluster;B4 clusters",
-	       21, -0.5, 20.5 );
+		21, -0.5, 20.5 );
   TProfile ncolvsxmB( "ncolvsxmB",
 		      "B cols vs xmod;x mod 200 [#mum];<cols> B4 ",
 		      60, 0, 300, 0, 10 );
@@ -872,33 +1252,43 @@ int main( int argc, char* argv[] )
   // B vs ADC:
 
   TProfile effBvsx0( "effBvsx0", "effB vs lower x;lower ADCplet x;eff B",
-		    216, 0, 64.8, -1, 2 );
+		     216, 0, 64.8, -1, 2 );
   TProfile effBvsx1( "effBvsx1", "effB vs upper x;upper ADCplet x;eff B",
-		    216, 0, 64.8, -1, 2 );
+		     216, 0, 64.8, -1, 2 );
   TProfile effBvsy( "effBvsy", "effB vs y;ADCplet y;eff B",  81, 0, 16.2, -1, 2 );
   TProfile effBvst1( "effBvst1", "effB vs time;trigger;eff B",
-		    500, 0, 1E6, -1, 2 );
-  TProfile effBvst5( "effBvst5", "effB vs time;trigger;eff B",
-		    500, 0, 5E6, -1, 2 );
-  TProfile effBvst40( "effBvst40", "effB vs time;trigger;eff B",
-		     1000, 0, 40E6, -1, 2 );
-  TProfile effBvsti1( "effBvsti1", "effB vs time;trigger;iso eff B",
 		     500, 0, 1E6, -1, 2 );
+  TProfile effBvst5( "effBvst5", "effB vs time;trigger;eff B",
+		     500, 0, 5E6, -1, 2 );
+  TProfile effBvst40( "effBvst40", "effB vs time;trigger;eff B",
+		      1000, 0, 40E6, -1, 2 );
+  TProfile effBvsti1( "effBvsti1", "effB vs time;trigger;iso eff B",
+		      500, 0, 1E6, -1, 2 );
   TProfile effBvsti2( "effBvst21", "effB vs time;trigger;iso eff B",
-		     400, 0, 2E6, -1, 2 );
+		      400, 0, 2E6, -1, 2 );
   TProfile effBvsti10( "effBvsti10", "effB vs time;trigger;iso eff B",
-		     500, 0, 10E6, -1, 2 );
+		       500, 0, 10E6, -1, 2 );
   TProfile effBvswi( "effBvswi", "effB vs window;link window [mm];iso eff B",
 		     20, 0.025, 1.025, -1, 2 );
   TProfile2D * effBmap1;
   effBmap1 = new TProfile2D( "effBmap1",
-			    "B efficiency map;col;row;eff B",
-			    8*54, 0, 8*8.1, 2*81, 0, 2*8.1, -1, 2 );
+			     "B efficiency map;col;row;eff B",
+			     8*54, 0, 8*8.1, 2*81, 0, 2*8.1, -1, 2 );
   TProfile2D * effBmap4;
   effBmap4 = new TProfile2D( "effBmap4",
-			    "B efficiency map;col;row;eff B",
-			    4*54, 0, 8*8.1, 1*81, 0, 2*8.1, -1, 2 );
+			     "B efficiency map;col;row;eff B",
+			     4*54, 0, 8*8.1, 1*81, 0, 2*8.1, -1, 2 );
+  // kink profiles B:
 
+  TProfile2D * kinkBmap1;
+  kinkBmap1 = new TProfile2D( "kinkBmap1",
+			     "B kink map;col;row;kink B",
+			     8*54, 0, 8*8.1, 2*81, 0, 2*8.1, -1, 2 );
+  TProfile2D * kinkBmap4;
+  kinkBmap4 = new TProfile2D( "kinkBmap4",
+			     "B kink map;col;row;kink B",
+			      4*54, 0, 8*8.1, 1*81, 0, 2*8.1, -1, 2 );
+  
   // triplets ADB:
 
   TH1D hdxADB( "dxADB", "ADB dx;x-x [mm];ADBplets", 200, -1, 1 );
@@ -931,50 +1321,50 @@ int main( int argc, char* argv[] )
   TH1D hdxcBDC( "dxcBDC", "BDC dx;x-x [#mum];BDCs", 200, -200, 200 );
   TH1D hdycBDC( "dycBDC", "BDC dy;y-y [#mum];BDCs", 200, -200, 200 );
   TH1D hdxciBDC( "dxciBDC", "BDC dx;x-x [#mum];isolated BDCs",
-		  200, -200, 200 );
+		 200, -200, 200 );
   TH1D hdyciBDC( "dyciBDC", "BDC dy;y-y [#mum];isolated BDCs",
-		  200, -200, 200 );
+		 200, -200, 200 );
   TH1D hdycfBDC( "dycfBDC", "BDC dy;y-y [#mum];inner BDCs",
-		  200, -200, 200 );
+		 200, -200, 200 );
   TH1D hdycfqBDC( "dycfqBDC", "BDC dy;y-y [#mum];Landau peak inner BDCs",
 		  200, -200, 200 );
 
   TProfile dxvsxBDC( "dxvsxBDC",
-		      "BDC dx vs x;x [mm];BDC <dx>",
-		      216, 0, 64.8, -1, 1 );
+		     "BDC dx vs x;x [mm];BDC <dx>",
+		     216, 0, 64.8, -1, 1 );
   TProfile dxvsyBDC( "dxvsyBDC",
-		      "BDC dx vs y;y [mm];BDC <dx>",
-		      81, 0, 16.2, -1, 1 );
+		     "BDC dx vs y;y [mm];BDC <dx>",
+		     81, 0, 16.2, -1, 1 );
   TProfile dyvsxBDC( "dyvsxBDC",
-		      "BDC dy vs x;x [mm];BDC <dy>",
-		      216, 0, 64.8, -1, 1 );
+		     "BDC dy vs x;x [mm];BDC <dy>",
+		     216, 0, 64.8, -1, 1 );
   TProfile dyvsyBDC( "dyvsyBDC",
-		      "BDC dy vs y;y [mm];BDC <dy>",
-		      81, 0, 16.2, -1, 1 );
+		     "BDC dy vs y;y [mm];BDC <dy>",
+		     81, 0, 16.2, -1, 1 );
   TProfile madyvsyBDC( "madyvsyBDC",
-		      "BDC mady vs y;y [mm];BDC MAD(y) [#mum]",
-		      81, 0, 16.2, 0, 100 );
+		       "BDC mady vs y;y [mm];BDC MAD(y) [#mum]",
+		       81, 0, 16.2, 0, 100 );
   TProfile madyvsxBDC( "madyvsxBDC",
-		      "BDC mady vs x;x [mm];BDC MAD(y) [#mum]",
-		      216, 0, 64.8, 0, 100 );
+		       "BDC mady vs x;x [mm];BDC MAD(y) [#mum]",
+		       216, 0, 64.8, 0, 100 );
   TProfile madyvsymBDC( "madyvsymBDC",
-		      "BDC mady vs ymod;y mod 200 [#mum];BDC MAD(y) [#mum]",
-		      40, 0, 200, 0, 100 );
+			"BDC mady vs ymod;y mod 200 [#mum];BDC MAD(y) [#mum]",
+			40, 0, 200, 0, 100 );
   TH2D * hmapBDC;
   hmapBDC = new TH2D( "mapBDC",
-		       "BDCplet map;BDCplet col;BDCplet row;BDCplets",
+		      "BDCplet map;BDCplet col;BDCplet row;BDCplets",
 		      8*54, 0, 8*8.1, 2*81, 0, 2*8.1 );
 
   // C vs BD:
 
   TH1D hsizC4( "clszC4", "C cluster size;pixels/cluster;C4 clusters",
-	      51, -0.5, 50.5 );
+	       51, -0.5, 50.5 );
   TH1D hclqC4( "clqC4", "C cluster charge;cluster charge [ke];C4 clusters",
-	      100, 0, 100 );
+	       100, 0, 100 );
   TH1D hncolC4( "ncolC4", "C cluster size;columns/cluster;C4 clusters",
-	       21, -0.5, 20.5 );
+		21, -0.5, 20.5 );
   TH1D hnrowC4( "nrowC4", "C cluster size;rows/cluster;C4 clusters",
-	       21, -0.5, 20.5 );
+		21, -0.5, 20.5 );
   TProfile ncolvsxmC( "ncolvsxmC",
 		      "C cols vs xmod;x mod 200 [#mum];<cols> C4 ",
 		      60, 0, 300, 0, 10 );
@@ -982,85 +1372,94 @@ int main( int argc, char* argv[] )
 		      "C rows vs ymod;y mod 200 [#mum];<rows> C4 ",
 		      40, 0, 200, 0, 10 );
   TH1D hminxC4( "minxC4", "C first pixel;first pixel mod 2;C4 clusters",
-	       2, -0.5, 1.5 );
+		2, -0.5, 1.5 );
   TH1D hmaxxC4( "maxxC4", "C last pixel;last pixel mod 2;C4 clusters",
-	       2, -0.5, 1.5 );
+		2, -0.5, 1.5 );
 
   // C vs ADB:
 
   TProfile effCvsx0( "effCvsx0", "effC vs lower x;lower ADCplet x;eff C",
-		    216, 0, 64.8, -1, 2 );
+		     216, 0, 64.8, -1, 2 );
   TProfile effCvsx1( "effCvsx1", "effC vs upper x;upper ADCplet x;eff C",
-		    216, 0, 64.8, -1, 2 );
+		     216, 0, 64.8, -1, 2 );
   TProfile effCvsy( "effCvsy", "effC vs y;ADCplet y;eff C",  81, 0, 16.2, -1, 2 );
   TProfile effCvst1( "effCvst1", "effC vs time;trigger;eff C",
-		    500, 0, 1E6, -1, 2 );
+		     500, 0, 1E6, -1, 2 );
   TProfile effCvst5( "effCvst5", "effC vs time;trigger;eff C",
-		    500, 0, 5E6, -1, 2 );
+		     500, 0, 5E6, -1, 2 );
   TProfile effCvst40( "effCvst40", "effC vs time;trigger;eff C",
-		     1000, 0, 40E6, -1, 2 );
+		      1000, 0, 40E6, -1, 2 );
   TProfile effCvst( "effCvst", "effC vs time;trigger;eff C",
 		    500, 8.3E6, 8.4E6, -1, 2 );
   TProfile effCvsti1( "effCvsti1", "effC vs time;trigger;iso eff C",
-		     500, 0, 1E6, -1, 2 );
+		      500, 0, 1E6, -1, 2 );
   TProfile effCvsti2( "effCvsti2", "effC vs time;trigger;iso eff C",
-		     400, 0, 2E6, -1, 2 );
+		      400, 0, 2E6, -1, 2 );
   TProfile effCvsti10( "effCvsti10", "effC vs time;trigger;iso eff C",
-		     500, 0, 10E6, -1, 2 );
+		       500, 0, 10E6, -1, 2 );
   TProfile effCvswi( "effCvswi", "effC vs window;link window [mm];iso eff C",
 		     20, 0.025, 1.025, -1, 2 );
   TProfile2D * effCmap1;
   effCmap1 = new TProfile2D( "effCmap1",
-			    "C efficiency map;col;row;eff C",
-			    8*54, 0, 8*8.1, 2*81, 0, 2*8.1, -1, 2 );
+			     "C efficiency map;col;row;eff C",
+			     8*54, 0, 8*8.1, 2*81, 0, 2*8.1, -1, 2 );
   TProfile2D * effCmap4;
   effCmap4 = new TProfile2D( "effCmap4",
-			    "C efficiency map;col;row;eff C",
-			    4*54, 0, 8*8.1, 1*81, 0, 2*8.1, -1, 2 );
+			     "C efficiency map;col;row;eff C",
+			     4*54, 0, 8*8.1, 1*81, 0, 2*8.1, -1, 2 );
+
+  TH1D hkxB( "kinkxB", "kink at B in x;kink x at B [mrad];tracks",
+	     100, -10, 10 );
+  TH1D hkyB( "kinkyB", "kink at B in y;kink y at B [mrad];tracks",
+	     100, -10, 10 );
+  TH1D hkxqB( "kinkxqB", "kink at B in x;kink x at B [mrad];Landau peak tracks",
+	     100, -10, 10 );
+  TH1D hkyqB( "kinkyqB", "kink at B in y;kink y at B [mrad];Landau peak tracks",
+	     100, -10, 10 );
+
+  TH1D hkxC( "kinkxC", "kink at C in x;kink x at C [mrad];tracks",
+	     100, -10, 10 );
+  TH1D hkyC( "kinkyC", "kink at C in y;kink y at C [mrad];tracks",
+	     100, -10, 10 );
+  TH1D hkxqC( "kinkxqC", "kink at C in x;kink x at C [mrad];Landau peak tracks",
+	     100, -10, 10 );
+  TH1D hkyqC( "kinkyqC", "kink at C in y;kink y at C [mrad];Landau peak tracks",
+	     100, -10, 10 );
+
+  // GBL:
 
   TH1D hchi2( "chi2", "GBL chisq;chisq;track fits", 100, 0, 50 );
   TH1D hprob( "prob", "GBL fit prob;fit probability;track fits", 100, 0, 1 );
+
+  // GBL kinks:
+
+  TH1D hresx("resx", "Scatering Residuals in x",2100,-0.005,0.005);
+  TH1D hresy("resy", "Scatering Residuals in y",2100,-0.005,0.005);
 
   TH1D hnADC( "nADC", "ADCplets;ADCplets;events", 21, -0.5, 20.5 );
   TH1D hnADB( "nADB", "ADBplets;ADBplets;events", 21, -0.5, 20.5 );
   TH1D hn4ev( "n4ev", "4plets;4plets;events", 21, -0.5, 20.5 );
 
-
-  //kink
-  TH1D hresx("resx", "Scatering Residuals in x",2100,-0.005,0.005);
-  TH1D hresy("resy", "Scatering Residuals in y",2100,-0.005,0.005);
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // event loop:
-
-  int nevA = 0;
-  int nevB = 0;
-  int nevC = 0;
-  int nevD = 0;
-  int mpxA = 0;
-  int mpxB = 0;
-  int mpxC = 0;
-  int mpxD = 0;
 
   int n4x = 0;
   int n4y = 0;
   int n4 = 0;
-
-  int xm = 0;
-  int ym = 0;
-  int adc = 0;
+  int nmille = 0;
 
   size_t event_nr = 0;
 
   do {
     // Get next event:
-    DetectorEvent evt = reader.GetDetectorEvent();
+    DetectorEvent evt = reader->GetDetectorEvent();
 
     if ( evt.IsBORE()) { eudaq::PluginManager::Initialize(evt); }
 
     int n4ev = 0;
     bool ldbg = 0;
 
-    if (event_nr%1000==0)
+    if (event_nr%10000==0)
       ldbg = 1;
 
     if( ldbg ) std::cout<<"Processing event "<< event_nr<<std::endl;
@@ -1082,7 +1481,13 @@ int main( int argc, char* argv[] )
 
       if( ldbg ) std::cout << "PLANE " << plane.ID() << ": ";
 
-      int mod = modlist[iplane];
+      // ID 0-5 reserved for Mimosa telescope planes
+      // user planes start at 6
+
+      int mod = 0; // QUAD
+      if( plane.ID() == 6 ) mod = 1; // TRP
+      if( plane.ID() == 7 ) mod = 2; // DUT
+      if( plane.ID() == 8 ) mod = 3; // REF
 
       if( mod > 3 ) {
 	cout << "illegal plane " << iplane << endl;
@@ -1215,10 +1620,10 @@ int main( int argc, char* argv[] )
 
       for( vector<cluster>::iterator cA = cl[mod].begin(); cA != cl[mod].end(); ++cA ) {
 
-      hsiz[mod].Fill( cA->size );
-      hclq[mod].Fill( cA->charge*ke[mod] );
-      hncol[mod].Fill( cA->ncol );
-      hnrow[mod].Fill( cA->nrow );
+	hsiz[mod].Fill( cA->size );
+	hclq[mod].Fill( cA->charge*ke[mod] );
+	hncol[mod].Fill( cA->ncol );
+	hnrow[mod].Fill( cA->nrow );
 
       }
     } // planes = mod
@@ -1471,7 +1876,7 @@ int main( int argc, char* argv[] )
 
 	double dx2 = xD - xA;
 
-	//if( abs( dx2 ) > 0.20 ) continue; // angle cut
+	//if( abs( dx2 ) > cutx ) continue; // angle cut
 
 	double xavg2 = (xA + 2*xD)/3; // C is closer to D: more weight for D
 
@@ -1488,7 +1893,7 @@ int main( int argc, char* argv[] )
 
 	  double dx3 = xC - xavg2;
 
-	  if( abs( dx3 ) > 0.15 ) continue; // tight tri
+	  if( abs( dx3 ) > cutx ) continue; // tight tri
 
 	  double xavg3 = 0.5*(xA + xC); // equidistant
 
@@ -1500,7 +1905,7 @@ int main( int argc, char* argv[] )
 
 	    double dx4 = xB - xavg3;
 
-	    if( abs( dx4 ) > 0.15 ) continue;
+	    if( abs( dx4 ) > cutx ) continue;
 	    ++n4x;
 
 	  } // cl B
@@ -1537,7 +1942,7 @@ int main( int argc, char* argv[] )
 
 	double dy2 = yD - yA;
 
-	//if( abs( dy2 ) > 0.20 ) continue; // angle cut
+	//if( abs( dy2 ) > cuty ) continue; // angle cut
 
 	double yavg2 = (yA + 2*yD)/3; // C is closer to D: more weight for D
 
@@ -1554,7 +1959,7 @@ int main( int argc, char* argv[] )
 
 	  double dy3 = yC - yavg2;
 
-	  if( abs( dy3 ) > 0.15 ) continue;
+	  if( abs( dy3 ) > cuty ) continue;
 
 	  double yavg3 = 0.5*(yA + yC);
 
@@ -1566,7 +1971,7 @@ int main( int argc, char* argv[] )
 
 	    double dy4 = yB - yavg3;
 
-	    if( abs( dy4 ) > 0.15 ) continue;
+	    if( abs( dy4 ) > cuty ) continue;
 	    ++n4y;
 
 	  } // cl B
@@ -1675,8 +2080,8 @@ int main( int argc, char* argv[] )
 	  dyvsyDA.Fill( yD, dy2 );
 	}
 
-	//if( abs( dx2 ) > 0.20 ) continue; // angle cut
-	//if( abs( dy2 ) > 0.20 ) continue; // angle cut
+	//if( abs( dx2 ) > cutx ) continue; // angle cut
+	//if( abs( dy2 ) > cuty ) continue; // angle cut
 
 	double xavg2C = (xA + 2*xD)/3; // equidistant
 	double yavg2C = (yA + 2*yD)/3; // C is closer to D: more weight for D
@@ -1723,8 +2128,8 @@ int main( int argc, char* argv[] )
 	    hmapADC->Fill( xC, yC ); // D-C-A
 	  }
 
-	  if( abs( dx3 ) > 0.15 ) continue; // tight tri
-	  if( abs( dy3 ) > 0.15 ) continue;
+	  if( abs( dx3 ) > cutx ) continue; // tight tri
+	  if( abs( dy3 ) > cuty ) continue;
 
 	  ++nADC;
 
@@ -1787,8 +2192,6 @@ int main( int argc, char* argv[] )
 
 	      // we have a quad track !
 
-	      ++n4;
-	      ++n4ev;
 	      hmapACB->Fill( xB, yB );
 	      if( cB->big == 0 && cD->big == 0 && cA->big == 0 && cC->big == 0 ) {
 		hsizB4.Fill( cB->size );
@@ -1830,7 +2233,6 @@ int main( int argc, char* argv[] )
 	    for( int iw = 1; iw < 21; ++ iw )
 	      effBvswi.Fill( iw*0.050+0.005, nm[iw] );
 	  }
-
 	} // cl C
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1894,8 +2296,8 @@ int main( int argc, char* argv[] )
 	    hmapADB->Fill( xB, yB ); // D-B-A
 	  }
 
-	  if( abs( dx3 ) > 0.15 ) continue; // tight tri
-	  if( abs( dy3 ) > 0.15 ) continue;
+	  if( abs( dx3 ) > cutx ) continue; // tight tri
+	  if( abs( dy3 ) > cuty ) continue;
 
 	  ++nADB;
 
@@ -1978,7 +2380,7 @@ int main( int argc, char* argv[] )
 		madyvsxBDC.Fill( xC, fabs(dy4)*1E3 );
 		madyvsymBDC.Fill( ymod, fabs(dy4)*1E3 );
 		hdycfBDC.Fill( dy4*1E3 );
-		if( lqA && lqC && lqC )
+		if( lqB && lqD && lqC )
 		  hdycfqBDC.Fill( dy4*1E3 );
 	      }
 	    }
@@ -1988,17 +2390,21 @@ int main( int argc, char* argv[] )
 		nm[iw] = 1;
 	      }
 
-	    if( abs( dx4 ) > 0.20 ) continue; // quad
-	    if( abs( dy4 ) > 0.20 ) continue;
+	    if( abs( dx4 ) > cutx ) continue; // quad
+	    if( abs( dy4 ) > cuty ) continue;
 
 	    // we have a quad track !
 
+	    ++n4ev;
+
 	    hmapBDC->Fill( xC, yC );
 
-	    if( cA->big > 0 ) continue;
-	    if( cB->big > 0 ) continue;
-	    if( cC->big > 0 ) continue;
-	    if( cD->big > 0 ) continue;
+	    // if( cA->big > 0 ) continue;
+	    // if( cB->big > 0 ) continue;
+	    // if( cC->big > 0 ) continue;
+	    // if( cD->big > 0 ) continue;
+
+	    ++n4;
 
 	    hsizC4.Fill( cC->size );
 	    hclqC4.Fill( cC->charge*ke[2] );
@@ -2008,6 +2414,41 @@ int main( int argc, char* argv[] )
 	    nrowvsymC.Fill( ymod, cC->nrow );
 	    hminxC4.Fill( (minx-1)%2 ); 
 	    hmaxxC4.Fill( (maxx-1)%2 ); 
+
+	    // slopes and kinks:
+
+	    double sxBA = (xB-xA) / dz; // track angle [rad]
+	    double syBA = (yB-yA) / dz;
+	    double sxCB = (xC-xB) / dz;
+	    double syCB = (yC-yB) / dz;
+	    double sxDC = (xD-xC) / dz;
+	    double syDC = (yD-yC) / dz;
+
+	    double kxB = sxCB - sxBA;
+	    double kyB = syCB - syBA;
+	    double kxC = sxDC - sxCB;
+	    double kyC = syDC - syCB;
+
+	    
+	    kinkBmap1->Fill( xB, yB, kxB*kxB+kyB*kyB );
+	    kinkBmap4->Fill( xB, yB, kxB*kxB+kyB*kyB );
+	  
+	    if( yB > 2 && yB < 13 ) { // Al handle cut out fiducial region
+	      hkxB.Fill( kxB*1E3 );
+	      hkyB.Fill( kyB*1E3 );
+	      if( lqA && lqB && lqC ) {
+		hkxqB.Fill( kxB*1E3 );
+		hkyqB.Fill( kyB*1E3 );
+	      }
+	    }
+	    if( yC > 2 && yC < 13 ) { // module handle cutout
+	      hkxC.Fill( kxC*1E3 );
+	      hkyC.Fill( kyC*1E3 );
+	      if( lqB && lqC && lqD ) {
+		hkxqC.Fill( kxC*1E3 );
+		hkyqC.Fill( kyC*1E3 );
+	      }
+	    }
 
 	    // GBL track fit:
 
@@ -2103,8 +2544,11 @@ int main( int argc, char* argv[] )
 
 	    // write to MP binary file
 
-	    if( probchi > 0.01 ) // bias with bad alignment ?
+	    if( probchi > 0.01 ) { // bias with bad alignment ?
 	      traj.milleOut( *mille );
+	      ++nmille;
+	    }
+
 	    //------------------------------------------------------------------
 	    //Kink-Measurement
 	    unsigned int aLabel=2;
@@ -2153,7 +2597,87 @@ int main( int argc, char* argv[] )
 
     if(ldbg ) cout << "event " << event_nr << endl;
 
-  } while (reader.NextEvent());
+  } while( reader->NextEvent() && event_nr < lev );
+
+  cout << "eof" << endl;
+  cout << "events " << event_nr << endl;
+
+  double nb, ne, nm;
+
+  nb = hdxAB.GetNbinsX();
+  ne = hdxAB.GetSumOfWeights();
+  nm = hdxAB.GetMaximum();
+  cout << hdxAB.GetTitle() << endl;
+  cout << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl;
+  cout << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+  cout << "  at " << hdxAB.GetBinCenter(hdxAB.GetMaximumBin())
+       << "  alignx[0] = " << alignx[0] + hdxAB.GetBinCenter(hdxAB.GetMaximumBin())
+       << endl;
+
+  nb = hdyAB.GetNbinsX();
+  ne = hdyAB.GetSumOfWeights();
+  nm = hdyAB.GetMaximum();
+  cout << hdyAB.GetTitle() << endl;
+  cout << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl;
+  cout << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+  cout << "  at " << hdyAB.GetBinCenter(hdyAB.GetMaximumBin())
+       << "  aligny[0] = " << aligny[0] + hdyAB.GetBinCenter(hdyAB.GetMaximumBin())
+       << endl;
+
+  nb = hdxCB.GetNbinsX();
+  ne = hdxCB.GetSumOfWeights();
+  nm = hdxCB.GetMaximum();
+  cout << hdxCB.GetTitle() << endl;
+  cout << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl;
+  cout << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+  cout << "  at " << hdxCB.GetBinCenter(hdxCB.GetMaximumBin())
+       << "  alignx[2] = " << alignx[2] + hdxCB.GetBinCenter(hdxCB.GetMaximumBin())
+       << endl;
+
+  nb = hdyCB.GetNbinsX();
+  ne = hdyCB.GetSumOfWeights();
+  nm = hdyCB.GetMaximum();
+  cout << hdyCB.GetTitle() << endl;
+  cout << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl;
+  cout << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+  cout << "  at " << hdyCB.GetBinCenter(hdyCB.GetMaximumBin())
+       << "  aligny[2] = " << aligny[2] + hdyCB.GetBinCenter(hdyCB.GetMaximumBin())
+       << endl;
+
+  nb = hdxDB.GetNbinsX();
+  ne = hdxDB.GetSumOfWeights();
+  nm = hdxDB.GetMaximum();
+  cout << hdxDB.GetTitle() << endl;
+  cout << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl;
+  cout << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+  cout << "  at " << hdxDB.GetBinCenter(hdxDB.GetMaximumBin())
+       << "  alignx[3] = " << alignx[3] + hdxDB.GetBinCenter(hdxDB.GetMaximumBin())
+       << endl;
+
+  nb = hdyDB.GetNbinsX();
+  ne = hdyDB.GetSumOfWeights();
+  nm = hdyDB.GetMaximum();
+  cout << hdyDB.GetTitle() << endl;
+  cout << "  Inside  " << ne << " (" << ne/nb << " per bin)" << endl;
+  cout << "  Maximum " << nm << " (factor " << nm/ne*nb << " above mean)" << endl;
+  cout << "  at " << hdyDB.GetBinCenter(hdyDB.GetMaximumBin())
+       << "  aligny[3] = " << aligny[3] + hdyDB.GetBinCenter(hdyDB.GetMaximumBin())
+       << endl;
+
+  cout << endl;
+  cout << "quad  tracks " << n4 << endl;
+  cout << "mille tracks " << nmille << endl;
+
+  cout << endl;
+  cout << "effB upper ROCs "
+       << effBvsx1.GetSumOfWeights() / ( effBvsx1.GetNbinsX() - 2 ) << endl;
+  cout << "effB lower ROCs "
+       << effBvsx0.GetSumOfWeights() / ( effBvsx0.GetNbinsX() - 2 ) << endl;
+
+  cout << "effC upper ROCs "
+       << effCvsx1.GetSumOfWeights() / ( effCvsx1.GetNbinsX() - 2 ) << endl;
+  cout << "effC lower ROCs "
+       << effCvsx0.GetSumOfWeights() / ( effCvsx0.GetNbinsX() - 2 ) << endl;
 
   histoFile->Write();
   histoFile->Close();
